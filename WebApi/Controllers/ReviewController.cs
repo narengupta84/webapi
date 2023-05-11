@@ -7,6 +7,8 @@ using WebApi.Repository;
 
 namespace WebApi.Controllers
 {
+    [Route("api/[controller]")]
+    [ApiController]
     public class ReviewController : Controller
     {
         private readonly IReviewRepository _reviewRepository;

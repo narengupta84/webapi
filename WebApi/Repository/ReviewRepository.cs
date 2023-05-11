@@ -1,10 +1,11 @@
 ﻿using AutoMapper;
 using WebApi.Data;
+using WebApi.Interfaces;
 using WebApi.Models;
 
 namespace WebApi.Repository
 {
-    public class ReviewRepository
+    public class ReviewRepository : IReviewRepository
     {
         private readonly DataContext _context;
         private readonly IMapper _mapper;
