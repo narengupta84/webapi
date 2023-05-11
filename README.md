@@ -1,2 +1,14 @@
-# webapi
-Web API project in asp.net core with the help of Entity Framework 
+# Dotnet Core API Project with Entity Framework
+This is a README file for a .NET Core API project that utilizes Entity Framework for data access. 
+
+## Prerequisites
+To run this project, ensure you have the following prerequisites installed:
+
+.NET Core SDK (version 6.0 or later)
+Entity Framework Core (version 7.0.5 or later)
+A relational database SQL Server. (In this project I used SQL Server from https://www.cloudclusters.io/)
+
+## License
+This project is licensed under the MIT License. Feel free to use, modify, and distribute the code as needed.
+
+
