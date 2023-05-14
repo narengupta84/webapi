@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using WebApi.Dto;
 using WebApi.Interfaces;
 using WebApi.Models;
@@ -7,16 +9,20 @@ using WebApi.Repository;
 
 namespace WebApi.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     public class CountryController : Controller
     {
         private readonly ICountryRepository _countryRepository;
         private readonly IMapper _mapper;
-        public CountryController(ICountryRepository countryRepository, IMapper mapper)
+        private readonly ILogger<CountryController> _logger;
+        public CountryController(ICountryRepository countryRepository, IMapper mapper, ILogger<CountryController> logger)
         {
             _countryRepository = countryRepository;
             _mapper = mapper;
+            _logger = logger;
         }
+
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(IEnumerable<Country>))]
         public IActionResult GetCountries()
@@ -64,6 +70,8 @@ namespace WebApi.Controllers
         [ProducesResponseType(404)]
         public IActionResult UpdateCountry(int countryId, [FromBody] CountryDto updateCountry)
         {
+            //_logger.LogInformation("UpdateCountry => ", UpdateCountry);
+
             if (updateCountry == null)
                 return BadRequest(ModelState);
 
