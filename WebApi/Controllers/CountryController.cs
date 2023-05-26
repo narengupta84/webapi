@@ -3,15 +3,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using WebApi.Dto;
+using WebApi.Generic;
 using WebApi.Interfaces;
 using WebApi.Models;
 using WebApi.Repository;
 
 namespace WebApi.Controllers
 {
-    [Authorize]
-    [Route("api/[controller]")]
-    public class CountryController : Controller
+    public class CountryController : ControllerBaseClass
     {
         private readonly ICountryRepository _countryRepository;
         private readonly IMapper _mapper;

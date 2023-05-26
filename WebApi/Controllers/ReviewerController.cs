@@ -2,16 +2,14 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Dto;
+using WebApi.Generic;
 using WebApi.Interfaces;
 using WebApi.Models;
 using WebApi.Repository;
 
 namespace WebApi.Controllers
 {
-    [Authorize]
-    [Route("api/[controller]")]
-    [ApiController]
-    public class ReviewerController : Controller
+    public class ReviewerController : ControllerBaseClass
     {
         private readonly IReviewerRepository _reviewerRepository;
         private readonly IMapper _mapper;

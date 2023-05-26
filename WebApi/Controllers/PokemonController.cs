@@ -3,16 +3,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using WebApi.Dto;
+using WebApi.Generic;
 using WebApi.Interfaces;
 using WebApi.Models;
 using WebApi.Repository;
 
 namespace WebApi.Controllers
 {
-    [Authorize]
-    [Route("api/[controller]")]
-    [ApiController]
-    public class PokemonController : Controller
+    public class PokemonController : ControllerBaseClass
     {
         private readonly IPokemonRepository _pokemonRepository;
         private readonly IReviewRepository _reviewRepository;

@@ -10,9 +10,6 @@ using WebApi.Repository;
 
 namespace WebApi.Controllers
 {
-    [Authorize]
-    [Route("api/[controller]")]
-    [ApiController]
     public class CategoryController : ControllerBaseClass
     {
         private readonly ICategoryRepository _categoryRepository;
