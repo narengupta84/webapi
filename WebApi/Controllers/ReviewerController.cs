@@ -24,100 +24,101 @@ namespace WebApi.Controllers
 
 
         [HttpGet]
-        [ProducesResponseType(200, Type = typeof(IEnumerable<Reviewer>))]
-        public IActionResult GetReviewers()
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Reviewer>))]
+        public async Task<IActionResult> GetReviewers()
         {
             var reviewers = _mapper.Map<List<ReviewerDto>>(_reviewerRepository.GetReviewers());
 
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return await Task.FromResult<IActionResult>(BadRequest(ModelState));
 
-            return Ok(reviewers);
+            return await Task.FromResult<IActionResult>(Ok(reviewers));
         }
 
         [HttpGet("{reviewerId}")]
-        [ProducesResponseType(200, Type = typeof(Reviewer))]
-        [ProducesResponseType(400)]
-        public IActionResult GetReviewer(int reviewerId)
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Reviewer))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetReviewer(int reviewerId)
         {
             if (!_reviewerRepository.ReviewerExists(reviewerId))
-                return NotFound();
+                return await Task.FromResult<IActionResult>(NotFound());
 
             var reviewers = _mapper.Map<ReviewerDto>(_reviewerRepository.GetReviewer(reviewerId));
 
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return await Task.FromResult<IActionResult>(BadRequest(ModelState));
 
-            return Ok(reviewers);
+            return await Task.FromResult<IActionResult>(Ok(reviewers));
         }
 
         [HttpGet("{reviewerId}/reviews")]
-        [ProducesResponseType(200, Type = typeof(Reviewer))]
-        [ProducesResponseType(400)]
-        public IActionResult GetReviewsByAReviewer(int reviewerId)
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Reviewer))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetReviewsByAReviewer(int reviewerId)
         {
             if (!_reviewerRepository.ReviewerExists(reviewerId))
-                return NotFound();
+                return await Task.FromResult<IActionResult>(NotFound());
 
             var reviewers = _mapper.Map<List<ReviewDto>>(_reviewerRepository.GetReviewsByReviewer(reviewerId));
 
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return await Task.FromResult<IActionResult>(BadRequest(ModelState));
 
-            return Ok(reviewers);
+            return await Task.FromResult<IActionResult>(Ok(reviewers));
         }
 
         [HttpPut("{reviewerId}")]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(204)]
-        [ProducesResponseType(404)]
-        public IActionResult UpdateReviewer(int reviewerId, [FromBody] ReviewerDto updateReviewer)
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> UpdateReviewer(int reviewerId, [FromBody] ReviewerDto updateReviewer)
         {
             if (updateReviewer == null)
-                return BadRequest(ModelState);
+                return await Task.FromResult<IActionResult>(BadRequest(ModelState));
 
             if (reviewerId != updateReviewer.Id)
-                return BadRequest(ModelState);
+                return await Task.FromResult<IActionResult>(BadRequest(ModelState));
 
             if (!_reviewerRepository.ReviewerExists(reviewerId))
-                return BadRequest(ModelState);
+                return await Task.FromResult<IActionResult>(BadRequest(ModelState));
 
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return await Task.FromResult<IActionResult>(BadRequest(ModelState));
 
             var reviewerMap = _mapper.Map<Reviewer>(updateReviewer);
 
             if (!_reviewerRepository.UpdateReviewer(reviewerMap))
             {
                 ModelState.AddModelError("", "Something went wrong while updating");
-                return StatusCode(500, ModelState);
+                return await Task.FromResult<IActionResult>(StatusCode(StatusCodes.Status500InternalServerError, ModelState));
             }
 
-            return NoContent();
+            return await Task.FromResult<IActionResult>(NoContent());
         }
 
         [HttpDelete("{reviewerId}")]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(204)]
-        [ProducesResponseType(404)]
-        public IActionResult DeleteReviewer(int reviewerId)
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> DeleteReviewer(int reviewerId)
         {
             if (!_reviewerRepository.ReviewerExists(reviewerId))
             {
-                return NotFound();
+                return await Task.FromResult<IActionResult>(NotFound());
             }
 
             var reviewerToDelete = _reviewerRepository.GetReviewer(reviewerId);
 
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return await Task.FromResult<IActionResult>(BadRequest(ModelState));
 
             if (!_reviewerRepository.DeleteReviewer(reviewerToDelete))
             {
                 ModelState.AddModelError("", "Something went wrong deleting reviewer");
+                return await Task.FromResult<IActionResult>(StatusCode(StatusCodes.Status500InternalServerError, ModelState));
             }
 
-            return NoContent();
+            return await Task.FromResult<IActionResult>(NoContent());
         }
     }
 }

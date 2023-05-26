@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics.Metrics;
 using WebApi.Dto;
+using WebApi.Generic;
 using WebApi.Interfaces;
 using WebApi.Models;
 using WebApi.Repository;
@@ -11,7 +13,7 @@ namespace WebApi.Controllers
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]
-    public class CategoryController : Controller
+    public class CategoryController : ControllerBaseClass
     {
         private readonly ICategoryRepository _categoryRepository;
         private readonly IMapper _mapper;
@@ -21,85 +23,85 @@ namespace WebApi.Controllers
             _mapper = mapper;
         }
         [HttpGet]
-        [ProducesResponseType(200, Type = typeof(IEnumerable<Category>))]
-        public IActionResult GetCategories()
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Category>))]
+        public async Task<IActionResult> GetCategories()
         {
             var categories = _mapper.Map<List<CategoryDto>>(_categoryRepository.GetCategories());
 
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return await Task.FromResult<IActionResult>(BadRequest(ModelState));
 
-            return Ok(categories);
+            return await Task.FromResult<IActionResult>(Ok(categories));
         }
 
         [HttpGet("{categoryId}")]
-        [ProducesResponseType(200, Type = typeof(Category))]
-        [ProducesResponseType(400)]
-        public IActionResult GetCategory(int categoryId)
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Category))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetCategory(int categoryId)
         {
             if (!_categoryRepository.CategoryExists(categoryId))
-                return NotFound();
+                return await Task.FromResult<IActionResult>(NotFound());
 
             var categories = _mapper.Map<CategoryDto>(_categoryRepository.GetCategory(categoryId));
 
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return await Task.FromResult<IActionResult>(BadRequest(ModelState));
 
-            return Ok(categories);
+            return await Task.FromResult<IActionResult>(Ok(categories));
         }
 
         [HttpGet("pokemon/{categoryId}")]
-        [ProducesResponseType(200, Type = typeof(IEnumerable<Category>))]
-        [ProducesResponseType(400)]
-        public IActionResult GetPokemonByCategoryId(int categoryId)
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Category>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetPokemonByCategoryId(int categoryId)
         {
             if (!_categoryRepository.CategoryExists(categoryId))
-                return NotFound();
+                return await Task.FromResult<IActionResult>(NotFound());
 
             var pokemons = _mapper.Map<PokemonDto>(_categoryRepository.GetPokemonByCategory(categoryId));
 
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return await Task.FromResult<IActionResult>(BadRequest(ModelState));
 
-            return Ok(pokemons);
+            return await Task.FromResult<IActionResult>(Ok(pokemons));
         }
 
         [HttpPut("{categoryId}")]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(204)]
-        [ProducesResponseType(404)]
-        public IActionResult UpdateCategory(int categoryId, [FromBody] CategoryDto updateCategory)
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> UpdateCategory(int categoryId, [FromBody] CategoryDto updateCategory)
         {
             if (updateCategory == null)
-                return BadRequest(ModelState);
+                return await Task.FromResult<IActionResult>(BadRequest(ModelState));
 
             if (categoryId != updateCategory.Id)
-                return BadRequest(ModelState);
+                return await Task.FromResult<IActionResult>(BadRequest(ModelState));
 
             if (!_categoryRepository.CategoryExists(categoryId))
-                return BadRequest(ModelState);
+                return await Task.FromResult<IActionResult>(BadRequest(ModelState));
 
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return await Task.FromResult<IActionResult>(BadRequest(ModelState));
 
             var categoryMap = _mapper.Map<Category>(updateCategory);
 
             if (!_categoryRepository.UpdateCategory(categoryMap))
             {
                 ModelState.AddModelError("", "Something went wrong while updating");
-                return StatusCode(500, ModelState);
+                return await Task.FromResult<IActionResult>(StatusCode(StatusCodes.Status500InternalServerError, ModelState));
             }
 
-            return NoContent();
+            return await Task.FromResult<IActionResult>(NoContent());
         }
 
         [HttpPost]
-        [ProducesResponseType(204)]
-        [ProducesResponseType(400)]
-        public IActionResult CreateCategory([FromBody] CategoryDto createCategory)
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> CreateCategory([FromBody] CategoryDto createCategory)
         {
             if (createCategory == null)
-                return BadRequest(ModelState);
+                return await Task.FromResult<IActionResult>(BadRequest(ModelState));
 
             var category = _categoryRepository.GetCategories()
                 .Where(c => c.Name.Trim().ToUpper() == createCategory.Name.Trim().ToUpper())
@@ -112,41 +114,42 @@ namespace WebApi.Controllers
             }
 
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return await Task.FromResult<IActionResult>(BadRequest(ModelState));
 
             var categoryMap = _mapper.Map<Category>(createCategory);
 
             if (!_categoryRepository.CreateCategory(categoryMap))
             {
                 ModelState.AddModelError("", "Something went wrong while saving");
-                return StatusCode(500, ModelState);
+                return await Task.FromResult<IActionResult>(StatusCode(StatusCodes.Status500InternalServerError, ModelState));
             }
 
-            return Ok("Successfully Created");
+            return await Task.FromResult<IActionResult>(Ok("Successfully Created"));
         }
 
         [HttpDelete("{categoryId}")]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(204)]
-        [ProducesResponseType(404)]
-        public IActionResult DeleteCategory(int categoryId)
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> DeleteCategory(int categoryId)
         {
             if (!_categoryRepository.CategoryExists(categoryId))
             {
-                return NotFound();
+                return await Task.FromResult<IActionResult>(NotFound());
             }
 
             var categoryToDelete = _categoryRepository.GetCategory(categoryId);
 
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return await Task.FromResult<IActionResult>(BadRequest(ModelState));
 
             if (!_categoryRepository.DeleteCategory(categoryToDelete))
             {
                 ModelState.AddModelError("", "Something went wrong deleting category");
+                return await Task.FromResult<IActionResult>(StatusCode(StatusCodes.Status500InternalServerError, ModelState));
             }
 
-            return NoContent();
+            return await Task.FromResult<IActionResult>(NoContent());
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics.Metrics;
 using WebApi.Dto;
 using WebApi.Interfaces;
 using WebApi.Models;
@@ -23,97 +24,98 @@ namespace WebApi.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(200, Type = typeof(IEnumerable<Review>))]
-        public IActionResult GetReviews()
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Review>))]
+        public async Task<IActionResult> GetReviews()
         {
             var reviews = _mapper.Map<List<ReviewDto>>(_reviewRepository.GetReviews());
 
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return await Task.FromResult<IActionResult>(BadRequest(ModelState));
 
-            return Ok(reviews);
+            return await Task.FromResult<IActionResult>(Ok(reviews));
         }
 
         [HttpGet("{reviewId}")]
-        [ProducesResponseType(200, Type = typeof(Review))]
-        [ProducesResponseType(400)]
-        public IActionResult GetPokemon(int reviewId)
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Review))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetPokemon(int reviewId)
         {
             if (!_reviewRepository.ReviewExists(reviewId))
-                return NotFound();
+                return await Task.FromResult<IActionResult>(NotFound());
 
             var review = _mapper.Map<PokemonDto>(_reviewRepository.GetReview(reviewId));
 
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return await Task.FromResult<IActionResult>(BadRequest(ModelState));
 
-            return Ok(review);
+            return await Task.FromResult<IActionResult>(Ok(review));
         }
 
         [HttpGet("pokemon/{pokeId}")]
-        [ProducesResponseType(200, Type = typeof(Review))]
-        [ProducesResponseType(400)]
-        public IActionResult GetReviewForAPokemonRating(int pokeId)
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Review))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetReviewForAPokemonRating(int pokeId)
         {
             var reviews = _mapper.Map<List<ReviewDto>>(_reviewRepository.GetReviewsOfAPokemon(pokeId));
 
             if (!ModelState.IsValid)
-                return BadRequest();
+                return await Task.FromResult<IActionResult>(BadRequest(ModelState));
 
-            return Ok(reviews);
+            return await Task.FromResult<IActionResult>(Ok(reviews));
         }
 
         [HttpPut("{reviewId}")]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(204)]
-        [ProducesResponseType(404)]
-        public IActionResult UpdateReview(int reviewId, [FromBody] ReviewDto updateReview)
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> UpdateReview(int reviewId, [FromBody] ReviewDto updateReview)
         {
             if (updateReview == null)
-                return BadRequest(ModelState);
+                return await Task.FromResult<IActionResult>(BadRequest(ModelState));
 
             if (reviewId != updateReview.Id)
-                return BadRequest(ModelState);
+                return await Task.FromResult<IActionResult>(BadRequest(ModelState));
 
             if (!_reviewRepository.ReviewExists(reviewId))
-                return BadRequest(ModelState);
+                return await Task.FromResult<IActionResult>(BadRequest(ModelState));
 
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return await Task.FromResult<IActionResult>(BadRequest(ModelState));
 
             var reviewMap = _mapper.Map<Review>(updateReview);
 
             if (!_reviewRepository.UpdateReview(reviewMap))
             {
                 ModelState.AddModelError("", "Something went wrong while updating");
-                return StatusCode(500, ModelState);
+                return await Task.FromResult<IActionResult>(StatusCode(StatusCodes.Status500InternalServerError, ModelState));
             }
 
-            return NoContent();
+            return await Task.FromResult<IActionResult>(NoContent());
         }
 
         [HttpDelete("{reviewId}")]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(204)]
-        [ProducesResponseType(404)]
-        public IActionResult DeleteReview(int reviewId)
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> DeleteReview(int reviewId)
         {
             if (!_reviewRepository.ReviewExists(reviewId))
             {
-                return NotFound();
+                return await Task.FromResult<IActionResult>(NotFound());
             }
 
             var reviewToDelete = _reviewRepository.GetReview(reviewId);
 
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return await Task.FromResult<IActionResult>(BadRequest(ModelState));
 
             if (!_reviewRepository.DeleteReview(reviewToDelete))
             {
                 ModelState.AddModelError("", "Something went wrong deleting owner");
+                return await Task.FromResult<IActionResult>(StatusCode(StatusCodes.Status500InternalServerError, ModelState));
             }
 
-            return NoContent();
+            return await Task.FromResult<IActionResult>(NoContent());
         }
     }
 }
