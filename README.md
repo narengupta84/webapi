@@ -8,6 +8,23 @@ To run this project, ensure you have the following prerequisites installed:
 Entity Framework Core (version 7.0.5 or later)
 A relational database SQL Server. (In this project I used SQL Server from https://www.cloudclusters.io/)
 
+## Steps to Migrate Initial Data to Database
+First: Delete the Migrations folder from the project.
+Second: Open Package Manager Console run below to query
+a. Add-Migration IntialCreate
+b. Update-Database
+
+Third: Open cmd at root directory of the project and run this migrate command
+a. dotnet run seeddata
+
+To get the token please use this credential
+URL: https://localhost:7246/api/Auth
+Body:
+{
+  "id": 1,
+  "name": "Pikachu"
+}
+
 ## Unit Testing
 For unit testing have used **FakeItEasy** & **FluentAssertions**
 
